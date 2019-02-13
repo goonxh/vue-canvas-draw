@@ -15,12 +15,29 @@
 
       }
     },
+    computed:{
+      canvas() {
+        return this.$refs.canvas;
+      },
+      width(){
+        return this.$refs.canvas.width;
+      },
+      height(){
+        return this.$refs.canvas.height;
+      },
+    },
     created() {
 
     },
     mounted() {
       bus.$on('changeDrawBg', src => {
         this.changeDrawBackground(src);
+      })
+      bus.$on('clearCanvas', () => {
+        this.clearCanvas();
+      })
+      bus.$on('saveToImage', () => {
+        this.saveToImage();
       })
     },
     methods: {
@@ -35,12 +52,24 @@
         if(src === 'bg4') {
           img.src = bg4;
         }
-        let canvas = this.$refs.canvas;
-        let cvs = canvas.getContext('2d');
+        let cvs = this.canvas.getContext('2d');
         img.onload = () =>{
-          console.log(img)
           cvs.drawImage(img, 0, 0, 900, 500);
         }
+      },
+      clearCanvas() {
+        let cvs = this.canvas.getContext('2d');
+        cvs.clearRect(0,0,this.width,this.height);
+      },
+      saveToImage() {
+        //强制浏览器下载，没有文件名和扩展名
+        /*let image = this.canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+        window.location.href = image;*/
+        let dataUrl = this.canvas.toDataURL("image/png");
+        let a = document.createElement('a');
+        a.href = dataUrl;
+        a.download = `Cvs ${new Date().toLocaleString()}`;
+        a.click();
       },
     }
   }

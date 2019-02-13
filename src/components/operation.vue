@@ -39,10 +39,10 @@
                 bus.$emit('changeDrawBg',src);
             },
             clear() {
-                console.log(1)
+                bus.$emit('clearCanvas');
             },
             save() {
-                console.log(2)
+                bus.$emit('saveToImage');
             }
         },
     }
