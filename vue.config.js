@@ -16,6 +16,7 @@ module.exports = {
             }
         },
     },
+
     configureWebpack: config => {
         if (process.env.NODE_ENV === 'production') {
             // 为生产环境修改配置
@@ -37,20 +38,32 @@ module.exports = {
             // 为开发环境修改配置
         }
     },
+
     css: {
-        loaderOptions: {
-            sass: {
-                test: /\.scss$/,
-                use: [
-                    "style-loader", // creates style nodes from JS strings
-                    "css-loader", // translates CSS into CommonJS
-                    "sass-loader" // compiles Sass to CSS, using Node Sass by default
-                ]
-            },
-            postcss: {
-                test: /\.css$/,
-                use: ['style-loader', 'postcss-loader'],
-            }
+      loaderOptions: {
+        sass: {
+          test: /\.scss$/,
+          use: [
+            'style-loader',
+            'css-loader',
+            'sass-loader'
+          ]
+        },
+        postcss: {
+          test: /\.css$/,
+          use: [
+            'style-loader',
+            'postcss-loader'
+          ]
         }
-    }
+      },
+      extract: false
+    },
+
+    baseUrl: undefined,
+    outputDir: undefined,
+    assetsDir: undefined,
+    runtimeCompiler: undefined,
+    productionSourceMap: false,
+    parallel: undefined
 }

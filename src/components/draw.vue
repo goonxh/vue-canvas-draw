@@ -43,13 +43,13 @@
     mounted() {
       bus.$on('changeDrawBg', src => {
         this.changeDrawBackground(src);
-      })
+      });
       bus.$on('clearCanvas', () => {
         this.clearCanvas();
-      })
+      });
       bus.$on('saveToImage', () => {
         this.saveToImage();
-      })
+      });
     },
     methods: {
       changeDrawBackground(src) {
