@@ -5,16 +5,10 @@ module.exports = {
         open: true,
         host: '0.0.0.0',
         disableHostCheck: true,
-        port: 3000,
+        port: 3333,
         https: false,
         hotOnly: false,
-        proxy: {
-            '/api' :{
-                target: 'http://localhost:8082',
-                secure: false,
-                changeOrigin: true,
-            }
-        },
+        proxy: false,
     },
 
     configureWebpack: config => {
@@ -40,24 +34,24 @@ module.exports = {
     },
 
     css: {
-      loaderOptions: {
-        sass: {
-          test: /\.scss$/,
-          use: [
-            'style-loader',
-            'css-loader',
-            'sass-loader'
-          ]
+        loaderOptions: {
+            sass: {
+                test: /\.scss$/,
+                use: [
+                    'style-loader',
+                    'css-loader',
+                    'sass-loader'
+                ]
+            },
+            postcss: {
+                test: /\.css$/,
+                use: [
+                    'style-loader',
+                    'postcss-loader'
+                ]
+            }
         },
-        postcss: {
-          test: /\.css$/,
-          use: [
-            'style-loader',
-            'postcss-loader'
-          ]
-        }
-      },
-      extract: false
+        extract: false
     },
 
     baseUrl: undefined,

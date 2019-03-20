@@ -9,10 +9,23 @@
   import bg2 from '../assets/bg2.jpg';
   import bg3 from '../assets/bg3.jpg';
   import bg4 from '../assets/bg4.jpg';
+  import Line from '../tool/line';
+
   export default {
     data() {
       return {
         mouseDown: false,
+        start: {
+          x: 0,
+          y: 0
+        },
+        end: {
+          x: 0,
+          y: 0
+        },
+        otherStack: [],
+        playerStack: [],
+        obj: {},
       }
     },
     computed:{
@@ -103,6 +116,7 @@
         this.mouseDown = true;
         let canvas = this.canvas;
         let cvs = this.canvas.getContext('2d');
+        this.start = this.end = this.canvasMousePos(canvas,event);
         if (this.tool === 'pen') {
           this.canvas.onmousedown = () => {
             let start_x = this.canvasMousePos(canvas,event).x;
@@ -116,18 +130,49 @@
             cvs.lineWidth = '2';      //画笔粗细
           }
         }
+        console.log(this.otherStack);
+        let arr = [];
+        for(let obj of this.otherStack){
+          obj.draw();
+          if(obj.inRange(this.start.x,this.start.y)){
+            arr.push(obj);
+          }
+        }
+        for(let obj of this.playerStack){
+          obj.draw();
+          if(obj.inRange(this.start.x,this.start.y)){
+            arr.push(obj);
+          }
+        }
       },
       canvasMove(event) {
         if(this.mouseDown) {
           let canvas = this.canvas;
           let cvs = this.canvas.getContext('2d');
+
           if (this.tool === 'pen') {
             let move_x = this.canvasMousePos(canvas,event).x;
             let move_y = this.canvasMousePos(canvas,event).y;
             cvs.lineTo(move_x, move_y);     //根据鼠标路径绘画
             cvs.strokeStyle = this.drawColor;
             cvs.stroke();   //立即渲染
+          } else if(this.tool === 'solidArrowLine' || this.tool === 'dottedArrowLine' || this.tool === 'waveLine' || this.tool === 'dottedLine' || this.tool === 'solidLine') {
+            this.end = this.canvasMousePos(canvas, event);
+            cvs.clearRect(0, 0, this.width, this.height);
+            let lineColor = this.drawColor;
+            this.obj = new Line(cvs,this.tool,this.start,this.end,lineColor,this.edgeColor);
+            this.reDraw();
+            this.obj.draw();
+            this.obj.drawEdges();
           }
+        }
+      },
+      reDraw(){
+        for(let obj of this.otherStack){
+          obj.draw();
+        }
+        for(let obj of this.playerStack){
+          obj.draw();
         }
       },
       canvasUp() {
@@ -137,6 +182,26 @@
         cvs.closePath();    //结束本次绘画
         canvas.onmousemove = null;
         canvas.onmouseup = null;
+        if(JSON.stringify(this.obj) !== "{}"){
+          let diffX = Math.abs(this.end.x - this.start.x);
+          let diffY = Math.abs(this.end.y - this.start.y);
+          let len = Math.sqrt(diffX * diffX + diffY * diffY);
+          if( ((this.obj.type === 'rectangle' || this.obj.type === 'circular') && (diffX > 40 || diffY > 40)) || ((this.obj.type === 'square' || this.obj.type === 'reTriangle') && (diffX > 40 && diffY > 40)) || (this.obj instanceof Line && len > 60)){
+            this.otherStack.push(this.obj);
+          }else {
+            this.canvas.getContext("2d").clearRect(0, 0, this.width, this.height);
+            this.reDraw();
+          }
+          this.obj = {};
+          this.start = {
+            x : 0,
+            y : 0
+          };
+          this.end = {
+            x : 0,
+            y : 0
+          }
+        }
       },
       canvasLeave() {
         this.mouseDown = false;
