@@ -26,6 +26,7 @@
         otherStack: [],
         playerStack: [],
         obj: {},
+        img: null,
       }
     },
     computed:{
@@ -76,14 +77,19 @@
         if(src === 'bg4') {
           img.src = bg4;
         }
-        let cvs = this.canvas.getContext('2d');
+        let ctx = this.canvas.getContext('2d');
         img.onload = () =>{
-          cvs.drawImage(img, 0, 0, 900, 500);
-        }
+          this.img = img;
+          ctx.drawImage(img, 0, 0, 900, 500);
+        };
+
       },
       clearCanvas() {
-        let cvs = this.canvas.getContext('2d');
-        cvs.clearRect(0, 0, this.width, this.height);
+        let ctx = this.canvas.getContext('2d');
+        ctx.clearRect(0, 0, this.width, this.height);
+        this.img = null;
+        this.otherStack = [];
+        this.playerStack = [];
       },
       saveToImage() {
         //强制浏览器下载，没有文件名和扩展名
@@ -92,7 +98,7 @@
         let dataUrl = this.canvas.toDataURL("image/png");
         let a = document.createElement('a');
         a.href = dataUrl;
-        a.download = `Cvs ${new Date().toLocaleString()}`;
+        a.download = `ctx ${new Date().toLocaleString()}`;
         a.click();
       },
       getScrollTop(){
@@ -115,19 +121,19 @@
       canvasDown(event) {
         this.mouseDown = true;
         let canvas = this.canvas;
-        let cvs = this.canvas.getContext('2d');
+        let ctx = this.canvas.getContext('2d');
         this.start = this.end = this.canvasMousePos(canvas,event);
         if (this.tool === 'pen') {
           this.canvas.onmousedown = () => {
             let start_x = this.canvasMousePos(canvas,event).x;
             let start_y = this.canvasMousePos(canvas,event).y;
-            cvs.beginPath();    //开始本次绘画
-            cvs.moveTo(start_x, start_y);   //画笔起始点
+            ctx.beginPath();    //开始本次绘画
+            ctx.moveTo(start_x, start_y);   //画笔起始点
             /*设置画笔属性*/
-            cvs.lineCap = 'round';
-            cvs.lineJoin = "round";
-            cvs.strokeStyle = this.drawColor;  //画笔颜色
-            cvs.lineWidth = '2';      //画笔粗细
+            ctx.lineCap = 'round';
+            ctx.lineJoin = "round";
+            ctx.strokeStyle = this.drawColor;  //画笔颜色
+            ctx.lineWidth = '2';      //画笔粗细
           }
         }
         console.log(this.otherStack);
@@ -148,19 +154,22 @@
       canvasMove(event) {
         if(this.mouseDown) {
           let canvas = this.canvas;
-          let cvs = this.canvas.getContext('2d');
+          let ctx = this.canvas.getContext('2d');
 
           if (this.tool === 'pen') {
             let move_x = this.canvasMousePos(canvas,event).x;
             let move_y = this.canvasMousePos(canvas,event).y;
-            cvs.lineTo(move_x, move_y);     //根据鼠标路径绘画
-            cvs.strokeStyle = this.drawColor;
-            cvs.stroke();   //立即渲染
+            ctx.lineTo(move_x, move_y);     //根据鼠标路径绘画
+            ctx.strokeStyle = this.drawColor;
+            ctx.stroke();   //立即渲染
           } else if(this.tool === 'solidArrowLine' || this.tool === 'dottedArrowLine' || this.tool === 'waveLine' || this.tool === 'dottedLine' || this.tool === 'solidLine') {
             this.end = this.canvasMousePos(canvas, event);
-            cvs.clearRect(0, 0, this.width, this.height);
+            ctx.clearRect(0, 0, this.width, this.height);
+            if(this.img) {
+              ctx.drawImage(this.img, 0, 0, 900, 500);
+            }
             let lineColor = this.drawColor;
-            this.obj = new Line(cvs,this.tool,this.start,this.end,lineColor,this.edgeColor);
+            this.obj = new Line(ctx,this.tool,this.start,this.end,lineColor,this.edgeColor);
             this.reDraw();
             this.obj.draw();
             this.obj.drawEdges();
@@ -178,8 +187,8 @@
       canvasUp() {
         this.mouseDown = false;
         let canvas = this.canvas;
-        let cvs = this.canvas.getContext('2d');
-        cvs.closePath();    //结束本次绘画
+        let ctx = this.canvas.getContext('2d');
+        ctx.closePath();    //结束本次绘画
         canvas.onmousemove = null;
         canvas.onmouseup = null;
         if(JSON.stringify(this.obj) !== "{}"){
@@ -206,8 +215,8 @@
       canvasLeave() {
         this.mouseDown = false;
         let canvas = this.canvas;
-        let cvs = this.canvas.getContext('2d');
-        cvs.closePath();    //结束本次绘画
+        let ctx = this.canvas.getContext('2d');
+        ctx.closePath();    //结束本次绘画
         canvas.onmousemove = null;
         canvas.onmouseup = null;
       },
